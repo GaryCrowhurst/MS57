@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motorsport Inspection Revision App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/confetti-js/0.0.18/confetti.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e63946;
+            --secondary-color: #457b9d;
+            --background-color: #f1faee;
+            --text-color: #1d3557;
+            --highlight-color: #ffd166;
+            --success-color: #2a9d8f;
+            --danger-color: #e76f51;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            background-color: #ddd;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success-color);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-btn {
+            padding: 10px 15px;
+            background-color: transparent;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--highlight-color);
+            color: var(--text-color);
+        }
+        
+        .nav-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .content-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            min-height: 400px;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .dashboard-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        .dashboard-card h3 {
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+        
+        .dashboard-card p {
+            color: #666;
+        }
+        
+        .quiz-container, .flashcard-container, .checklist-container, .matching-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .quiz-question {
+            margin-bottom: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .quiz-options {
+            margin-top: 15px;
+        }
+        
+        .quiz-option {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quiz-option:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .quiz-option.selected {
+            background-color: var(--highlight-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .quiz-option.correct {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        
+        .quiz-option.incorrect {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+        
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .quiz-feedback.correct {
+            background-color: rgba(42, 157, 143, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+        
+        .quiz-feedback.incorrect {
+            background-color: rgba(231, 111, 81, 0.1);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3d6990;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #238b7e;
+        }
+        
+        .flashcard {
+            perspective: 1000px;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .flashcard-front {
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .flashcard-back {
+            background-color: white;
+            color: var(--text-color);
+            transform: rotateY(180deg);
+            font-size: 1.2rem;
+            overflow-y: auto;
+        }
+        
+        .flashcard-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .checklist-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .checklist-item.completed {
+            background-color: rgba(42, 157, 143, 0.1);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .matching-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            margin-bottom: 10px;
+        }
+        
+        .matching-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .matching-item.selected {
+            background-color: var(--highlight-color);
+        }
+        
+        .matching-item.matched {
+            background-color: rgba(42, 157, 143, 0.1);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .matching-dropzone {
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            height: 100%;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .matching-dropzone.highlight {
+            border-color: var(--secondary-color);
+            background-color: rgba(69, 123, 157, 0.1);
+        }
+        
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+        
+        .achievement i {
+            font-size: 2rem;
+            color: var(--secondary-color);
+        }
+        
+        .achievement.unlocked i {
+            color: var(--highlight-color);
+        }
+        
+        .achievement-info {
+            flex-grow: 1;
+        }
+        
+        .achievement-progress {
+            width: 100px;
+            background-color: #ddd;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .achievement-progress-fill {
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        .modal-content p {
+            margin-bottom: 20px;
+        }
+        
+        .modal-content i {
+            font-size: 4rem;
+            color: var(--highlight-color);
+            margin-bottom: 20px;
+        }
+        
+        canvas#confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1001;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            nav {
+                flex-wrap: wrap;
+            }
+            
+            .nav-btn {
+                flex: 1 0 calc(33.333% - 10px);
+                margin: 5px;
+                text-align: center;
+                font-size: 0.9rem;
+            }
+            
+            .matching-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-flag-checkered"></i>
+                <h1>Motorsport Inspection Mastery</h1>
+            </div>
+            <div class="user-info">
+                <div>
+                    <p>{{ userName }}</p>
+                    <p>Progress: {{ overallProgress }}%</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" :style="{ width: overallProgress + '%' }"></div>
+                    </div>
+                </div>
+                <i class="fas fa-user-circle" style="font-size: 2rem;"></i>
+            </div>
+        </header>
+        
+        <nav>
+            <button 
+                v-for="(item, index) in menuItems" 
+                :key="index" 
+                class="nav-btn" 
+                :class="{ active: currentView === item.view }"
+                @click="changeView(item.view)">
+                <i :class="item.icon"></i> {{ item.name }}
+            </button>
+        </nav>
+        
+        <main class="content-section fade-in">
+            <!-- Dashboard View -->
+            <div v-if="currentView === 'dashboard'" class="slide-in">
+                <h2>Welcome to Your Revision Dashboard</h2>
+                <p>Choose a revision activity below to prepare for your L2MSMS exam.</p>
+                
+                <div class="dashboard-cards">
+                    <div 
+                        v-for="(card, index) in dashboardCards" 
+                        :key="index" 
+                        class="dashboard-card"
+                        @click="changeView(card.view)">
+                        <i :class="card.icon"></i>
+                        <h3>{{ card.name }}</h3>
+                        <p>{{ card.description }}</p>
+                        <div class="progress-bar" style="width: 100%; margin-top: 15px;">
+                            <div class="progress-fill" :style="{ width: card.progress + '%' }"></div>
+                        </div>
+                        <p>{{ card.progress }}% complete</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quiz View -->
+            <div v-if="currentView === 'quiz'" class="quiz-container slide-in">
+                <div class="progress-header">
+                    <h2>Motorsport Inspection Quiz</h2>
+                    <p>Question {{ currentQuizQuestion + 1 }}/{{ quizQuestions.length }}</p>
+                </div>
+                
+                <div v-if="!quizComplete" class="quiz-question">
+                    <h3>{{ quizQuestions[currentQuizQuestion].question }}</h3>
+                    
+                    <div class="quiz-options">
+                        <div 
+                            v-for="(option, index) in quizQuestions[currentQuizQuestion].options" 
+                            :key="index"
+                            class="quiz-option"
+                            :class="{
+                                'selected': selectedOption === index,
+                                'correct': showAnswer && index === quizQuestions[currentQuizQuestion].correctAnswer,
+                                'incorrect': showAnswer && selectedOption === index && index !== quizQuestions[currentQuizQuestion].correctAnswer
+                            }"
+                            @click="selectOption(index)">
+                            {{ option }}
+                        </div>
+                    </div>
+                    
+                    <div v-if="showAnswer" class="quiz-feedback" :class="{ 'correct': isAnswerCorrect, 'incorrect': !isAnswerCorrect }">
+                        <p v-if="isAnswerCorrect"><i class="fas fa-check-circle"></i> Correct! {{ quizQuestions[currentQuizQuestion].explanation }}</p>
+                        <p v-else><i class="fas fa-times-circle"></i> Incorrect. {{ quizQuestions[currentQuizQuestion].explanation }}</p>
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button 
+                            v-if="!showAnswer" 
+                            class="btn btn-primary" 
+                            :disabled="selectedOption === null"
+                            @click="checkAnswer">
+                            Check Answer
+                        </button>
+                        <button 
+                            v-else 
+                            class="btn btn-primary"
+                            @click="nextQuestion">
+                            {{ currentQuizQuestion < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz' }}
+                        </button>
+                    </div>
+                </div>
+                
+                <div v-else>
+                    <div style="text-align: center; padding: 30px;">
+                        <i class="fas fa-trophy" style="font-size: 4rem; color: var(--highlight-color);"></i>
+                        <h2>Quiz Complete!</h2>
+                        <p>You scored {{ quizScore }} out of {{ quizQuestions.length }}</p>
+                        <p>{{ getFeedbackMessage() }}</p>
+                        <button class="btn btn-primary" style="margin-top: 20px;" @click="resetQuiz">Try Again</button>
+                        <button class="btn btn-success" style="margin-left: 10px;" @click="changeView('dashboard')">Return to Dashboard</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Flashcards View -->
+            <div v-if="currentView === 'flashcards'" class="flashcard-container slide-in">
+                <div class="progress-header">
+                    <h2>Motorsport Inspection Flashcards</h2>
+                    <p>Card {{ currentFlashcard + 1 }}/{{ flashcards.length }}</p>
+                </div>
+                
+                <div class="flashcard" :class="{ flipped: isFlashcardFlipped }" @click="flipFlashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3>{{ flashcards[currentFlashcard].front }}</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <p>{{ flashcards[currentFlashcard].back }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard-nav">
+                    <button 
+                        class="btn btn-primary" 
+                        :disabled="currentFlashcard === 0"
+                        @click.stop="prevFlashcard">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <p>Click card to flip</p>
+                    <button 
+                        class="btn btn-primary" 
+                        :disabled="currentFlashcard === flashcards.length - 1"
+                        @click.stop="nextFlashcard">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Checklist View -->
+            <div v-if="currentView === 'checklist'" class="checklist-container slide-in">
+                <div class="progress-header">
+                    <h2>Vehicle Inspection Checklist</h2>
+                    <p>{{ completedItems.length }}/{{ checklistItems.length }} completed</p>
+                </div>
+                
+                <div class="progress-bar" style="margin-bottom: 20px;">
+                    <div class="progress-fill" :style="{ width: (completedItems.length / checklistItems.length * 100) + '%' }"></div>
+                </div>
+                
+                <div 
+                    v-for="(item, index) in checklistItems" 
+                    :key="index"
+                    class="checklist-item"
+                    :class="{ 'completed': completedItems.includes(index) }">
+                    <input 
+                        type="checkbox" 
+                        :id="'item-' + index" 
+                        :checked="completedItems.includes(index)"
+                        @change="toggleChecklistItem(index)">
+                    <label :for="'item-' + index">{{ item }}</label>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn btn-primary" @click="resetChecklist">Reset Checklist</button>
+                </div>
+            </div>
+            
+            <!-- Matching View -->
+            <div v-if="currentView === 'matching'" class="slide-in">
+                <div class="progress-header">
+                    <h2>Matching Exercise</h2>
+                    <p>{{ matchedPairs }}/{{ matchingItems.length }} pairs matched</p>
+                </div>
+                
+                <div class="progress-bar" style="margin-bottom: 20px;">
+                    <div class="progress-fill" :style="{ width: (matchedPairs / matchingItems.length * 100) + '%' }"></div>
+                </div>
+                
+                <div class="matching-container">
+                    <div>
+                        <h3>Terms</h3>
+                        <div 
+                            v-for="(item, index) in matchingItems" 
+                            :key="index"
+                            class="matching-item"
+                            :class="{ 
+                                'selected': selectedMatchingItem === index,
+                                'matched': matchedItems.includes(index)
+                            }"
+                            @click="selectMatchingItem(index)"
+                            v-show="!matchedItems.includes(index)">
+                            {{ item.term }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3>Definitions</h3>
+                        <div 
+                            v-for="(item, index) in matchingItems" 
+                            :key="index"
+                            class="matching-dropzone"
+                            :class="{ 
+                                'highlight': selectedMatchingItem !== null && !matchedItems.includes(index),
+                                'matched': matchedTargets.includes(index)
+                            }"
+                            @click="matchItems(index)">
+                            <span v-if="matchedTargets.includes(index)">
+                                {{ findMatchedTerm(index) }}
+                            </span>
+                            <span v-else>{{ item.definition }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn btn-primary" @click="resetMatching">Reset Matching</button>
+                </div>
+            </div>
+            
+            <!-- Achievements View -->
+            <div v-if="currentView === 'achievements'" class="slide-in">
+                <h2>Your Achievements</h2>
+                <p>Track your progress and unlock rewards as you revise.</p>
+                
+                <div 
+                    v-for="(achievement, index) in achievements" 
+                    :key="index"
+                    class="achievement"
+                    :class="{ 'unlocked': achievement.progress >= 100 }">
+                    <i :class="achievement.icon"></i>
+                    <div class="achievement-info">
+                        <h3>{{ achievement.name }}</h3>
+                        <p>{{ achievement.description }}</p>
+                        <div class="achievement-progress">
+                            <div class="achievement-progress-fill" :style="{ width: achievement.progress + '%' }"></div>
+                        </div>
+                        <p>{{ Math.min(achievement.progress, 100) }}% complete</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Achievement Modal -->
+        <div v-if="showAchievementModal" class="modal-overlay" @click="showAchievementModal = false">
+            <div class="modal-content" @click.stop>
+                <i class="fas fa-medal pulse"></i>
+                <h2>Achievement Unlocked!</h2>
+                <p>{{ unlockedAchievement.name }}</p>
+                <p>{{ unlockedAchievement.description }}</p>
+                <button class="btn btn-primary" @click="showAchievementModal = false">Continue</button>
+            </div>
+        </div>
+        
+        <canvas id="confetti-canvas"></canvas>
+    </div>
+    
+    <script>
+        const { createApp, ref, computed, watch, onMounted } = Vue;
+        
+        createApp({
+            setup() {
+                // User state
+                const userName = ref("Student");
+                const overallProgress = ref(0);
+                
+                // Navigation
+                const currentView = ref("dashboard");
+                const menuItems = ref([
+                    { name: "Dashboard", view: "dashboard", icon: "fas fa-home" },
+                    { name: "Quiz", view: "quiz", icon: "fas fa-question-circle" },
+                    { name: "Flashcards", view: "flashcards", icon: "fas fa-clone" },
+                    { name: "Checklist", view: "checklist", icon: "fas fa-clipboard-check" },
+                    { name: "Matching", view: "matching", icon: "fas fa-object-group" },
+                    { name: "Achievements", view: "achievements", icon: "fas fa-trophy" }
+                ]);
+                
+                // Dashboard
+                const dashboardCards = ref([
+                    { 
+                        name: "Quiz Challenge", 
+                        view: "quiz", 
+                        icon: "fas fa-question-circle", 
+                        description: "Test your knowledge with multiple choice questions", 
+                        progress: 0 
+                    },
+                    { 
+                        name: "Flashcard Study", 
+                        view: "flashcards", 
+                        icon: "fas fa-clone", 
+                        description: "Review key concepts and definitions", 
+                        progress: 0 
+                    },
+                    { 
+                        name: "Inspection Checklist", 
+                        view: "checklist", 
+                        icon: "fas fa-clipboard-check", 
+                        description: "Practice the vehicle inspection procedure", 
+                        progress: 0 
+                    },
+                    { 
+                        name: "Term Matching", 
+                        view: "matching", 
+                        icon: "fas fa-object-group", 
+                        description: "Match terms with their correct definitions", 
+                        progress: 0 
+                    }
+                ]);
+                
+                // Quiz
+                const quizQuestions = ref([
+                    {
+                        question: "Which of the following is NOT a prescribed motorsport vehicle inspection method?",
+                        options: [
+                            "Pre-competition inspection",
+                            "Post-competition inspection",
+                            "During competition inspection",
+                            "Annual technical inspection"
+                        ],
+                        correctAnswer: 3,
+                        explanation: "The prescribed methods are pre-competition, post-competition, and during competition inspections as outlined in the learning criteria."
+                    },
+                    {
+                        question: "What is the purpose of using a torque wrench during a vehicle inspection?",
+                        options: [
+                            "To measure the engine's torque output",
+                            "To spanner-check wheel nuts, bolts and other critical fastenings",
+                            "To calibrate the throttle response",
+                            "To test the braking system"
+                        ],
+                        correctAnswer: 1,
+                        explanation: "A torque wrench is used to ensure that wheel nuts, bolts and other critical fastenings are tightened to the correct specification."
+                    },
+                    {
+                        question: "Which of the following must be included in a detailed plan prior to carrying out inspection work?",
+                        options: [
+                            "Weather conditions",
+                            "Track configuration",
+                            "Technical data required",
+                            "Driver's racing history"
+                        ],
+                        correctAnswer: 2,
+                        explanation: "Technical data required is listed as one of the essential items to include in a detailed plan, along with tools, replacement parts, replacement fluids, and consumables."
+                    },
+                    {
+                        question: "What should be checked regarding the throttle operation during an inspection?",
+                        options: [
+                            "That it reaches 50% opening",
+                            "That it reaches 75% opening",
+                            "That it reaches 100% opening",
+                            "That it has minimal resistance"
+                        ],
+                        correctAnswer: 2,
+                        explanation: "The inspection should verify that the throttle operation reaches 100% opening to ensure proper engine performance."
+                    },
+                    {
+                        question: "What is the implication of failing to carry out motorsport vehicle inspections correctly?",
+                        options: [
+                            "It may lead to disqualification only",
+                            "It could potentially lead to safety hazards and equipment failure",
+                            "It only affects the vehicle's performance",
+                            "It only results in financial penalties"
+                        ],
+                        correctAnswer: 1,
+                        explanation: "Failing to carry out inspections correctly can lead to safety hazards, equipment failure, and could endanger the driver and others."
+                    },
+                    {
+                        question: "Which of the following is a requirement when working safely during vehicle inspections?",
+                        options: [
+                            "Using any available tools regardless of calibration",
+                            "Working quickly without concern for the environment",
+                            "Using suitable personal protective equipment and vehicle coverings",
+                            "Allowing other team members to use your inspection area"
+                        ],
+                        correctAnswer: 2,
+                        explanation: "Using suitable personal protective equipment and vehicle coverings is essential for safety during inspection activities."
+                    },
+                    {
+                        question: "What should be ensured regarding the driver before a competition?",
+                        options: [
+                            "The driver has access to all technical documents",
+                            "The driver is fitted correctly into the seat, and seat belts are securely fastened",
+                            "The driver has racing experience",
+                            "The driver has memorized the track layout"
+                        ],
+                        correctAnswer: 1,
+                        explanation: "It's critical to ensure that the driver is fitted correctly into the seat and that seat belts are securely fastened for safety."
+                    },
+                    {
+                        question: "What important information should the driver have prior to entering the vehicle or competition?",
+                        options: [
+                            "The history of the vehicle",
+                            "The age of the components",
+                            "Amount of fuel, type of tyres and pressures, track conditions, vehicle geometry changes",
+                            "The weather forecast only"
+                        ],
+                        correctAnswer: 2,
+                        explanation: "The driver should have crucial information including amount of fuel, type of tyres and pressures, track conditions, vehicle geometry changes, brake balance, and brake condition."
+                    },
+                    {
+                        question: "What must be checked regarding the fire extinguisher before competition?",
+                        options: [
+                            "That it is visible to the driver",
+                            "That it is accessible to the pit crew",
+                            "That the bottle is full and the system is armed",
+                            "That it has been used previously"
+                        ],
+                        correctAnswer: 2,
+                        explanation: "Safety checks must ensure that the fire extinguisher bottle is full and the system is armed for emergency situations."
+                    },
+                    {
+                        question: "Which of the following is NOT a recommended source of technical information to support inspection activities?",
+                        options: [
+                            "Vehicle technical data",
+                            "Inspection procedures",
+                            "Legal requirements",
+                            "Social media forums"
+                        ],
+                        correctAnswer: 3,
+                        explanation: "Social media forums are not a recommended source. Vehicle technical data, inspection procedures, legal requirements, and event requirements are the suitable sources mentioned in the criteria."
+                    }
+                ]);
+                
+                const currentQuizQuestion = ref(0);
+                const selectedOption = ref(null);
+                const showAnswer = ref(false);
+                const isAnswerCorrect = ref(false);
+                const quizScore = ref(0);
+                const quizComplete = ref(false);
+                
+                // Flashcards
+                const flashcards = ref([
+                    {
+                        front: "Pre-competition Inspection",
+                        back: "An inspection conducted before a motorsport event to ensure the vehicle meets all safety and technical regulations. Includes checking critical components, fluids, and ensuring the vehicle is race-ready."
+                    },
+                    {
+                        front: "Post-competition Inspection",
+                        back: "An inspection performed after a competition to assess any damage, wear, or issues that occurred during the event. This helps determine necessary repairs and maintenance before the next event."
+                    },
+                    {
+                        front: "During-competition Inspection",
+                        back: "Quick checks performed during pit stops or between race segments. These focus on critical safety items, tire condition, fluid levels, and any developing issues reported by the driver."
+                    },
+                    {
+                        front: "Tools and Equipment Calibration",
+                        back: "The process of ensuring measurement tools provide accurate readings according to manufacturer's and legal requirements. Essential for precise measurements during inspections."
+                    },
+                    {
+                        front: "Vehicle Operating Specification",
+                        back: "The set of parameters within which a motorsport vehicle should operate, including fluid pressures, temperatures, clearances, and tolerances specific to that vehicle."
+                    },
+                    {
+                        front: "Inspection Records",
+                        back: "Documentation that records all checks performed, issues found, and work done during an inspection. These provide accountability and a history of the vehicle's condition."
+                    },
+                    {
+                        front: "Personal Protective Equipment (PPE)",
+                        back: "Safety gear worn during inspections including gloves, safety glasses, appropriate footwear, and sometimes fire-resistant clothing, to protect against various hazards."
+                    },
+                    {
+                        front: "Torque Wrench",
+                        back: "A precision tool used to apply a specific torque to fasteners like wheel nuts and bolts. Ensures components are tightened to the correct specification for safety and performance."
+                    },
+                    {
+                        front: "Brake Balance",
+                        back: "The distribution of braking force between the front and rear wheels. Must be properly set during inspection to ensure optimal braking performance and vehicle stability."
+                    },
+                    {
+                        front: "Technical Data",
+                        back: "Reference information including specifications, procedures, and requirements needed to properly inspect and maintain a motorsport vehicle according to regulations."
+                    }
+                ]);
+                
+                const currentFlashcard = ref(0);
+                const isFlashcardFlipped = ref(false);
+                
+                // Checklist
+                const checklistItems = ref([
+                    "Check wheel nuts and critical fastenings with a torque wrench",
+                    "Verify fuel tanks are filled to correct capacity",
+                    "Ensure suitable tyres are fitted, damage-free, and at correct cold pressures",
+                    "Check for correct oil pressure prior to engine warm-up",
+                    "Monitor engine temperatures and pressures during warm-up",
+                    "Pressurise the cooling system after initial start-up",
+                    "Test that throttle operation reaches 100% opening",
+                    "Verify power steering fluid levels and check for leaks",
+                    "Ensure hydraulic brake and clutch fluids are at correct levels",
+                    "Check that brake balance is set correctly",
+                    "Inflate damper bump canisters using appropriate gases",
+                    "Verify clutch operating clearance and test gear selection through all gears",
+                    "Test that electrical systems are operating correctly",
+                    "Check spherical bearings and wheel bearings for play",
+                    "Ensure all bodywork, fairings, wings, covers and hatches are secured",
+                    "Verify driver is fitted correctly into seat with seat belts fastened",
+                    "Check fire extinguisher bottle is full and system is armed",
+                    "Ensure wheels are correctly torqued with locking mechanisms in place",
+                    "Provide driver with appropriate vehicle information before competition",
+                    "Clean bodywork, fairings, windscreen and other relevant areas",
+                    "Verify work area/vehicle track access lane is free from tools and objects"
+                ]);
+                
+                const completedItems = ref([]);
+                
+                // Matching
+                const matchingItems = ref([
+                    { term: "Job Card", definition: "Document used to record work performed on a vehicle" },
+                    { term: "Inspection Record", definition: "Documentation of vehicle checks and condition" },
+                    { term: "Vehicle Record", definition: "History of maintenance and modifications for a specific vehicle" },
+                    { term: "Team Manager", definition: "Person who can receive recommendations based on inspection results" },
+                    { term: "Chief Mechanic", definition: "Senior technical staff who can receive inspection recommendations" },
+                    { term: "No1 Mechanic", definition: "Lead technician responsible for a specific vehicle" },
+                    { term: "Calibration", definition: "Process of ensuring measurement tools provide accurate readings" },
+                    { term: "Technical Data", definition: "Specifications and requirements needed for proper inspection" },
+                    { term: "Pre-competition", definition: "Type of inspection conducted before an event" },
+                    { term: "Post-competition", definition: "Type of inspection performed after an event" }
+                ]);
+                
+                const selectedMatchingItem = ref(null);
+                const matchedItems = ref([]);
+                const matchedTargets = ref([]);
+                const matchedPairs = computed(() => matchedItems.value.length);
+                
+                // Achievements
+                const achievements = ref([
+                    {
+                        name: "Quiz Master",
+                        description: "Complete the quiz with a score of 8 or higher",
+                        icon: "fas fa-crown",
+                        progress: 0,
+                        unlocked: false
+                    },
+                    {
+                        name: "Memory Champion",
+                        description: "Review all flashcards at least once",
+                        icon: "fas fa-brain",
+                        progress: 0,
+                        unlocked: false
+                    },
+                    {
+                        name: "Inspection Pro",
+                        description: "Complete the entire inspection checklist",
+                        icon: "fas fa-clipboard-check",
+                        progress: 0,
+                        unlocked: false
+                    },
+                    {
+                        name: "Terminology Expert",
+                        description: "Successfully match all terms in the matching exercise",
+                        icon: "fas fa-book",
+                        progress: 0,
+                        unlocked: false
+                    },
+                    {
+                        name: "Revision Champion",
+                        description: "Reach 80% overall progress in all activities",
+                        icon: "fas fa-medal",
+                        progress: 0,
+                        unlocked: false
+                    }
+                ]);
+                
+                // Modal
+                const showAchievementModal = ref(false);
+                const unlockedAchievement = ref({});
+                
+                // Functions
+                const changeView = (view) => {
+                    currentView.value = view;
+                };
+                
+                // Quiz functions
+                const selectOption = (index) => {
+                    if (!showAnswer.value) {
+                        selectedOption.value = index;
+                    }
+                };
+                
+                const checkAnswer = () => {
+                    if (selectedOption.value !== null) {
+                        isAnswerCorrect.value = selectedOption.value === quizQuestions.value[currentQuizQuestion.value].correctAnswer;
+                        showAnswer.value = true;
+                        
+                        if (isAnswerCorrect.value) {
+                            quizScore.value++;
+                        }
+                    }
+                };
+                
+                const nextQuestion = () => {
+                    if (currentQuizQuestion.value < quizQuestions.value.length - 1) {
+                        currentQuizQuestion.value++;
+                        selectedOption.value = null;
+                        showAnswer.value = false;
+                    } else {
+                        quizComplete.value = true;
+                        updateQuizProgress();
+                    }
+                };
+                
+                const resetQuiz = () => {
+                    currentQuizQuestion.value = 0;
+                    selectedOption.value = null;
+                    showAnswer.value = false;
+                    quizScore.value = 0;
+                    quizComplete.value = false;
+                };
+                
+                const getFeedbackMessage = () => {
+                    const score = quizScore.value;
+                    const total = quizQuestions.value.length;
+                    const percentage = (score / total) * 100;
+                    
+                    if (percentage >= 90) {
+                        return "Excellent! You're ready for the exam.";
+                    } else if (percentage >= 70) {
+                        return "Good job! A bit more revision and you'll be fully prepared.";
+                    } else if (percentage >= 50) {
+                        return "Getting there. Keep practicing to improve your score.";
+                    } else {
+                        return "You need more practice. Don't worry, keep revising!";
+                    }
+                };
+                
+                const updateQuizProgress = () => {
+                    const percentage = (quizScore.value / quizQuestions.value.length) * 100;
+                    dashboardCards.value[0].progress = Math.round(percentage);
+                    
+                    // Update achievement
+                    if (quizScore.value >= 8) {
+                        achievements.value[0].progress = 100;
+                        if (!achievements.value[0].unlocked) {
+                            achievements.value[0].unlocked = true;
+                            showAchievementUnlocked(achievements.value[0]);
+                        }
+                    } else {
+                        achievements.value[0].progress = (quizScore.value / 8) * 100;
+                    }
+                    
+                    updateOverallProgress();
+                };
+                
+                // Flashcard functions
+                const flipFlashcard = () => {
+                    isFlashcardFlipped.value = !isFlashcardFlipped.value;
+                };
+                
+                const nextFlashcard = () => {
+                    if (currentFlashcard.value < flashcards.value.length - 1) {
+                        currentFlashcard.value++;
+                        isFlashcardFlipped.value = false;
+                        updateFlashcardProgress();
+                    }
+                };
+                
+                const prevFlashcard = () => {
+                    if (currentFlashcard.value > 0) {
+                        currentFlashcard.value--;
+                        isFlashcardFlipped.value = false;
+                    }
+                };
+                
+                const updateFlashcardProgress = () => {
+                    const percentage = ((currentFlashcard.value + 1) / flashcards.value.length) * 100;
+                    dashboardCards.value[1].progress = Math.round(percentage);
+                    
+                    // Update achievement
+                    if (currentFlashcard.value === flashcards.value.length - 1) {
+                        achievements.value[1].progress = 100;
+                        if (!achievements.value[1].unlocked) {
+                            achievements.value[1].unlocked = true;
+                            showAchievementUnlocked(achievements.value[1]);
+                        }
+                    } else {
+                        achievements.value[1].progress = ((currentFlashcard.value + 1) / flashcards.value.length) * 100;
+                    }
+                    
+                    updateOverallProgress();
+                };
+                
+                // Checklist functions
+                const toggleChecklistItem = (index) => {
+                    if (completedItems.value.includes(index)) {
+                        completedItems.value = completedItems.value.filter(item => item !== index);
+                    } else {
+                        completedItems.value.push(index);
+                    }
+                    
+                    updateChecklistProgress();
+                };
+                
+                const resetChecklist = () => {
+                    completedItems.value = [];
+                    updateChecklistProgress();
+                };
+                
+                const updateChecklistProgress = () => {
+                    const percentage = (completedItems.value.length / checklistItems.value.length) * 100;
+                    dashboardCards.value[2].progress = Math.round(percentage);
+                    
+                    // Update achievement
+                    if (completedItems.value.length === checklistItems.value.length) {
+                        achievements.value[2].progress = 100;
+                        if (!achievements.value[2].unlocked) {
+                            achievements.value[2].unlocked = true;
+                            showAchievementUnlocked(achievements.value[2]);
+                        }
+                    } else {
+                        achievements.value[2].progress = (completedItems.value.length / checklistItems.value.length) * 100;
+                    }
+                    
+                    updateOverallProgress();
+                };
+                
+                // Matching functions
+                const selectMatchingItem = (index) => {
+                    if (!matchedItems.value.includes(index)) {
+                        selectedMatchingItem.value = index;
+                    }
+                };
+                
+                const matchItems = (targetIndex) => {
+                    if (selectedMatchingItem.value !== null && !matchedTargets.value.includes(targetIndex)) {
+                        if (selectedMatchingItem.value === targetIndex) {
+                            matchedItems.value.push(selectedMatchingItem.value);
+                            matchedTargets.value.push(targetIndex);
+                            selectedMatchingItem.value = null;
+                            
+                            // Check if all items are matched
+                            if (matchedItems.value.length === matchingItems.value.length) {
+                                setTimeout(() => {
+                                    alert("Congratulations! You've matched all items correctly!");
+                                }, 500);
+                            }
+                            
+                            updateMatchingProgress();
+                        } else {
+                            alert("That's not the correct match. Try again!");
+                            selectedMatchingItem.value = null;
+                        }
+                    }
+                };
+                
+                const findMatchedTerm = (targetIndex) => {
+                    const itemIndex = matchedItems.value.indexOf(targetIndex);
+                    if (itemIndex !== -1) {
+                        return matchingItems.value[targetIndex].term;
+                    }
+                    return "";
+                };
+                
+                const resetMatching = () => {
+                    matchedItems.value = [];
+                    matchedTargets.value = [];
+                    selectedMatchingItem.value = null;
+                    updateMatchingProgress();
+                };
+                
+                const updateMatchingProgress = () => {
+                    const percentage = (matchedItems.value.length / matchingItems.value.length) * 100;
+                    dashboardCards.value[3].progress = Math.round(percentage);
+                    
+                    // Update achievement
+                    if (matchedItems.value.length === matchingItems.value.length) {
+                        achievements.value[3].progress = 100;
+                        if (!achievements.value[3].unlocked) {
+                            achievements.value[3].unlocked = true;
+                            showAchievementUnlocked(achievements.value[3]);
+                        }
+                    } else {
+                        achievements.value[3].progress = (matchedItems.value.length / matchingItems.value.length) * 100;
+                    }
+                    
+                    updateOverallProgress();
+                };
+                
+                // Overall progress and achievements
+                const updateOverallProgress = () => {
+                    let totalProgress = 0;
+                    dashboardCards.value.forEach(card => {
+                        totalProgress += card.progress;
+                    });
+                    
+                    overallProgress.value = Math.round(totalProgress / dashboardCards.value.length);
+                    
+                    // Update overall achievement
+                    if (overallProgress.value >= 80) {
+                        achievements.value[4].progress = 100;
+                        if (!achievements.value[4].unlocked) {
+                            achievements.value[4].unlocked = true;
+                            showAchievementUnlocked(achievements.value[4]);
+                        }
+                    } else {
+                        achievements.value[4].progress = (overallProgress.value / 80) * 100;
+                    }
+                };
+                
+                const showAchievementUnlocked = (achievement) => {
+                    unlockedAchievement.value = achievement;
+                    showAchievementModal.value = true;
+                    
+                    // Create confetti effect
+                    const confettiSettings = { 
+                        target: 'confetti-canvas',
+                        max: 150,
+                        size: 1.5,
+                        animate: true,
+                        props: ['circle', 'square', 'triangle', 'line'],
+                        colors: [[165,104,246], [230,61,135], [0,199,228], [253,214,126]],
+                        clock: 25,
+                        rotate: true,
+                        start_from_edge: true,
+                        respawn: false
+                    };
+                    
+                    const confetti = new ConfettiGenerator(confettiSettings);
+                    confetti.render();
+                    
+                    // Clear confetti after 3 seconds
+                    setTimeout(() => {
+                        confetti.clear();
+                    }, 3000);
+                };
+                
+                // Initialize
+                onMounted(() => {
+                    // You could load saved progress here from localStorage in a real app
+                });
+                
+                return {
+                    // State
+                    userName,
+                    overallProgress,
+                    currentView,
+                    menuItems,
+                    dashboardCards,
+                    quizQuestions,
+                    currentQuizQuestion,
+                    selectedOption,
+                    showAnswer,
+                    isAnswerCorrect,
+                    quizScore,
+                    quizComplete,
+                    flashcards,
+                    currentFlashcard,
+                    isFlashcardFlipped,
+                    checklistItems,
+                    completedItems,
+                    matchingItems,
+                    selectedMatchingItem,
+                    matchedItems,
+                    matchedTargets,
+                    matchedPairs,
+                    achievements,
+                    showAchievementModal,
+                    unlockedAchievement,
+                    
+                    // Functions
+                    changeView,
+                    selectOption,
+                    checkAnswer,
+                    nextQuestion,
+                    resetQuiz,
+                    getFeedbackMessage,
+                    flipFlashcard,
+                    nextFlashcard,
+                    prevFlashcard,
+                    toggleChecklistItem,
+                    resetChecklist,
+                    selectMatchingItem,
+                    matchItems,
+                    findMatchedTerm,
+                    resetMatching
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
